@@ -166,7 +166,7 @@ elif menu == "Upload Results":
            subjects = [
                 col for col in df.columns
                 if col not in non_subject_columns
-          ]
+           ]
 
            df["Total"] = df[subjects].sum(axis=1)
            df["Average"] = df[subjects].mean(axis=1)s=1)
