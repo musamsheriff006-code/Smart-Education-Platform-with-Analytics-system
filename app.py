@@ -189,7 +189,7 @@ elif menu == "Upload Results":
                         cursor.execute('''
                                 INSERT INTO students (
                                     name, class_name, math, science,
-                                    english, computer, attendance,
+                                    english, computer, physics, economic, education,biology, attendance,
                                     total, average, grade, status,
                                     created_at
                                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -200,6 +200,10 @@ elif menu == "Upload Results":
                             int(row['Science']),
                             int(row['English']),
                             int(row['Computer']),
+                            int(row['physics']),
+                            int(row['economic']),
+                            int(row['education']),
+                            int(row['biology']),
                             float(row['Attendance']),
                             int(row['Total']),
                             float(row['Average']),
@@ -252,7 +256,11 @@ elif menu == "Upload Results":
                         'Math': data['math'].mean(),
                         'Science': data['science'].mean(),
                         'English': data['english'].mean(),
-                        'Computer': data['computer'].mean()
+                        'Computer': data['computer'].mean(),
+                        'phisics': data['physics'].mean(),
+                        'economic': data['economic'].mean(),
+                        'education': data['education'].mean(),
+                        'biology': data['biology'].mean()
                     }
 
                     subject_df = pd.DataFrame({
