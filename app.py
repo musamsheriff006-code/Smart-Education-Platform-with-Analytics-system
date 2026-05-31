@@ -172,7 +172,7 @@ elif menu == "Upload Results":
             ]
             
             df["Total"] = df[subjects].sum(axis=1)
-            df["Average"] = df[subjects].mean(axis=1)s=1)
+            df["Average"] = df[subjects].mean(axis=1)
 
                 grades = []
                 status_list = []
