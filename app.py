@@ -23,29 +23,29 @@ cursor = conn.cursor()
 
 # ---------------------------------------------------
 # CREATE TABLES
-# ---------------------------------------------------
-
-cursor.execute('''
+cursor.execute("""
 CREATE TABLE IF NOT EXISTS students (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT,
     class_name TEXT,
-    math INTEGER,
-    science INTEGER,
-    english INTEGER,
-    computer INTEGER,
-    physics INTEGER,
-    economic INTEGER,
-    education INTEGER,
-    biology INTEGER,
     attendance REAL,
-    total INTEGER,
-average REAL,
+    total REAL,
+    average REAL,
     grade TEXT,
     status TEXT,
     created_at TEXT
 )
-''')
+""")
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS student_marks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER,
+    subject_name TEXT,
+    marks REAL,
+    FOREIGN KEY(student_id) REFERENCES students(id)
+)
+""")
 
 conn.commit()
 
