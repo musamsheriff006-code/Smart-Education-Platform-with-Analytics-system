@@ -160,19 +160,64 @@ elif menu == "Upload Results":
                 st.subheader("Uploaded Dataset")
                 st.dataframe(df)
 
-            non_subject_columns = [
-                "Name",
-                "Class",
-                "Attendance"
-            ]
+                # Standardize column names
+                df.columns = df.columns.str.strip().str.title()
+
+                st.subheader("Uploaded Dataset")
+                st.dataframe(df)
+
+                # Columns that are NOT subjects
+                non_subject_columns = [
+                    "Name",
+                    "Class",
+                    "Attendance",
+                    "Roll No",
+                    "Student Id",
+                    "Student id"
+                ]
+
+                # Automatically detect subject columns
+                subjects = []
+
+                for col in df.columns:
+                    if col not in non_subject_columns:
+                        if pd.api.types.is_numeric_dtype(df[col]):
+                            subjects.append(col)
+
+                st.write("Detected Subjects:", subjects)
+
+                if len(subjects) == 0:
+                    st.error("No subject columns detected.")
+                    st.stop()
+
+                # Calculate totals and averages
+                df["Total"] = df[subjects].sum(axis=1)
+                df["Average"] = df[subjects].mean(axis=1)
+
+                grades = []
+                status_list = []
+
+                for avg in df["Average"]:
+                    grade, status = classify(avg)
+                    grades.append(grade)
+                    status_list.append(status)
+
+                df["Grade"] = grades
+                df["Status"] = status_list
+
+                # Ranking
+                df["Rank"] = df["Total"].rank(
+                    ascending=False,
+                    method="dense"
+                )
+
+                st.subheader("Processed Results")
+                st.dataframe(df)
+
+
                 # Calculate totals
-            subjects = [
-                 col for col in df.columns
-                 if col not in non_subject_columns
-            ]
-            
-            df["Total"] = df[subjects].sum(axis=1)
-            df["Average"] = df[subjects].mean(axis=1)
+                df['Total'] = df[subjects].sum(axis=1)
+                df['Average'] = df[subjects].mean(axis=1)
 
                 grades = []
                 status_list = []
@@ -190,39 +235,38 @@ elif menu == "Upload Results":
                 st.subheader("Processed Results")
                 st.dataframe(df)
 
-                # Save data
-                if st.button("Save to Database"):
+
+                # Save processed file only
+                if st.button("Save To Database"):
 
                     for _, row in df.iterrows():
-                        cursor.execute('''
-                                INSERT INTO students (
-                                    name, class_name, math, science,
-                                    english, computer, physics, economic, education,biology, attendance,
-                                    total, average, grade, status,
-                                    created_at
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                                ''', (
-                            row['Name'],
-                            row['Class'],
-                            int(row['Math']),
-                            int(row['Science']),
-                            int(row['English']),
-                            int(row['Computer']),
-                            int(row['physics']),
-                            int(row['economic']),
-                            int(row['education']),
-                            int(row['biology']),
-                            float(row['Attendance']),
-                            int(row['Total']),
-                            float(row['Average']),
-                            row['Grade'],
-                            row['Status'],
+                        cursor.execute("""
+                        INSERT INTO students (
+                            name,
+                            class_name,
+                            attendance,
+                            total,
+                            average,
+                            grade,
+                            status,
+                            created_at
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            row["Name"],
+                            row["Class"],
+                            float(row.get("Attendance", 0)),
+                            int(row["Total"]),
+                            float(row["Average"]),
+                            row["Grade"],
+                            row["Status"],
                             datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         ))
 
                     conn.commit()
 
                     st.success("Data saved successfully!")
+
 
                 # Download result
                 csv = df.to_csv(index=False).encode('utf-8')
@@ -264,11 +308,7 @@ elif menu == "Upload Results":
                         'Math': data['math'].mean(),
                         'Science': data['science'].mean(),
                         'English': data['english'].mean(),
-                        'Computer': data['computer'].mean(),
-                        'phisics': data['physics'].mean(),
-                        'economic': data['economic'].mean(),
-                        'education': data['education'].mean(),
-                        'biology': data['biology'].mean()
+                        'Computer': data['computer'].mean()
                     }
 
                     subject_df = pd.DataFrame({
